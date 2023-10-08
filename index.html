@@ -26,8 +26,12 @@
     let bricks;
     let newBrick;
     let brickInfo;
+    let textStyle = { font: "18px Arial", fill: "#0095DD" };
     let scoreText;
     let score = 0;
+    let lives = 3;
+    let livesText;
+    let lifeLostText;
 
     function preload() {
       game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -50,10 +54,7 @@
 
       game.physics.arcade.checkCollision.down = false;
       ball.checkWorldBounds = true;
-      ball.events.onOutOfBounds.add(() => {
-        alert("Game over!");
-        location.reload();
-      }, this);
+      ball.events.onOutOfBounds.add(ballLeaveScreen, this);
 
       paddle = game.add.sprite(game.world.width * 0.5, game.world.height - 5, 'paddle');
       paddle.anchor.set(0.5, 1);
@@ -62,10 +63,17 @@
 
       initBricks();
 
-      scoreText = game.add.text(5, 5, 'Points: 0', {
-        font: '18px Arial',
-        fill: '#0095DD',
-      });
+      scoreText = game.add.text(5, 5, 'Points: 0', textStyle);
+
+      livesText = game.add.text(game.world.width - 5, 5, `Lives: ${lives}`, textStyle);
+      livesText.anchor.set(1, 0);
+      lifeLostText = game.add.text(
+        game.world.width * 0.5,
+        game.world.height * 0.5,
+        'Life lost, click to continue', textStyle
+      );
+      lifeLostText.anchor.set(0.5);
+      lifeLostText.visible = false;
     }
 
     function update() {
@@ -109,6 +117,34 @@
       brick.kill();
       score += 10;
       scoreText.setText(`Points: ${score}`);
+
+      let count_alive = 0;
+      for (let i = 0; i < bricks.children.length; i++) {
+        if (bricks.children[i].alive) {
+          count_alive++
+        }
+      }
+      if (count_alive === 0) {
+        alert("Congratulations! You've won the game.");
+        location.reload();
+      }
+    }
+
+    function ballLeaveScreen() {
+      lives--;
+      if (lives) {
+        livesText.setText(`Lives: ${lives}`);
+        lifeLostText.visible = true;
+        ball.reset(game.world.width * 0.5, game.world.height - 25);
+        paddle.reset(game.world.width * 0.5, game.world.height - 5);
+        game.input.onDown.addOnce(() => {
+          lifeLostText.visible = false;
+          ball.body.velocity.set(150, 150);
+        }, this);
+      } else {
+        alert('You lost, game over!');
+        location.reload();
+      }
     }
   </script>
 </body>
