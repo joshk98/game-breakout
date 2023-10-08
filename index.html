@@ -116,38 +116,34 @@
     }
 
     function ballHitBrick(ball, brick) {
+      ball.animations.play('wobble');
       const killTween = game.add.tween(brick.scale);
       killTween.to({ x: 0, y: 0 }, 200, Phaser.Easing.Linear.None);
-      killTween.onComplete.addOnce(() => {
+      killTween.onComplete.addOnce(function () {
         brick.kill();
       }, this);
       killTween.start();
-
-      let count_alive = 0;
-      for (let i = 0; i < bricks.children.length; i++) {
-        if (bricks.children[i].alive) {
-          count_alive++
-        }
-      }
-      if (count_alive === 0) {
-        alert("Congratulations! You've won the game.");
+      score += 10;
+      scoreText.setText('Points: ' + score);
+      if (score === brickInfo.count.row * brickInfo.count.col * 10) {
+        alert('You won the game, congratulations!');
         location.reload();
       }
-      ball.animations.play('wobble');
     }
 
     function ballLeaveScreen() {
       lives--;
       if (lives) {
-        livesText.setText(`Lives: ${lives}`);
+        livesText.setText('Lives: ' + lives);
         lifeLostText.visible = true;
         ball.reset(game.world.width * 0.5, game.world.height - 25);
         paddle.reset(game.world.width * 0.5, game.world.height - 5);
-        game.input.onDown.addOnce(() => {
+        game.input.onDown.addOnce(function () {
           lifeLostText.visible = false;
-          ball.body.velocity.set(150, 150);
+          ball.body.velocity.set(150, -150);
         }, this);
-      } else {
+      }
+      else {
         alert('You lost, game over!');
         location.reload();
       }
