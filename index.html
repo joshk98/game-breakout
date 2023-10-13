@@ -34,6 +34,10 @@
     let lifeLostText;
     let playing = false;
     let startButton;
+    let level = 1;
+    let levelText;
+    let levelCompleteText;
+    let gameOverText;
 
     function preload() {
       game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -71,6 +75,7 @@
 
       livesText = game.add.text(game.world.width - 5, 5, `Lives: ${lives}`, textStyle);
       livesText.anchor.set(1, 0);
+
       lifeLostText = game.add.text(
         game.world.width * 0.5,
         game.world.height * 0.5,
@@ -78,6 +83,19 @@
       );
       lifeLostText.anchor.set(0.5);
       lifeLostText.visible = false;
+
+      levelText = game.add.text(game.world.width - 5, 5, 'Level: 1', textStyle);
+      levelText.anchor.set(2.25, 0);
+
+
+
+      gameOverText = game.add.text(
+        game.world.width * 0.5,
+        game.world.height * 0.5,
+        'Game over, click to continue', textStyle
+      );
+      gameOverText.anchor.set(0.5);
+      gameOverText.visible = false;
 
       startButton = game.add.button(
         game.world.width * 0.5,
@@ -141,9 +159,22 @@
       killTween.start();
       score += 10;
       scoreText.setText('Points: ' + score);
-      if (score === brickInfo.count.row * brickInfo.count.col * 10) {
-        alert('You won the game, congratulations!');
-        location.reload();
+      if (score === brickInfo.count.row * level * brickInfo.count.col * 10) {
+        levelCompleteText = game.add.text(
+          game.world.width * 0.5,
+          game.world.height * 0.5,
+          `Level ${level} complete, click to continue`, textStyle
+        );
+        levelCompleteText.anchor.set(0.5);
+        ball.reset(game.world.width * 0.5, game.world.height - 25);
+        paddle.reset(game.world.width * 0.5, game.world.height - 5);
+        initBricks();
+        game.input.onDown.addOnce(function () {
+          levelCompleteText.visible = false;
+          ball.body.velocity.set(150, -150);
+        }, this);
+        level += 1;
+        levelText.setText('Level: ' + level);
       }
     }
 
@@ -160,14 +191,16 @@
         }, this);
       }
       else {
-        alert('You lost, game over!');
-        location.reload();
+        gameOverText.visible = true;
+        game.input.onDown.addOnce(function () {
+          location.reload();
+        })
       }
     }
 
     function ballHitPaddle(ball, paddle) {
       ball.animations.play('wobble');
-      ball.body.velocity.x = -5 * (paddle.x - ball.x);
+      ball.body.velocity.x = -2.5 * level * (paddle.x - ball.x);
     }
 
     function startGame() {
